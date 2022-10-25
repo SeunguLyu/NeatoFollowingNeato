@@ -22,6 +22,7 @@ class BallTracker(Node):
         self.cv_image = None                        # the latest image from the camera
         self.image_num = 0
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
+        self.result = cv2.VideoWriter('try2.avi', cv2.VideoWriter_fourcc(*'MJPG'), 10, (1024, 768))
 
         self.create_subscription(Image, image_topic, self.process_image, 10)
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
@@ -43,7 +44,7 @@ class BallTracker(Node):
         cv2.setMouseCallback('video_window', self.process_mouse_event)
         while True:
             self.run_loop()
-            time.sleep(1.0)
+            time.sleep(0.1)
 
     def process_mouse_event(self, event, x,y,flags,param):
         """ Process mouse events so that you can see the color values
@@ -62,11 +63,14 @@ class BallTracker(Node):
             #self.binary_image = cv2.inRange(self.cv_image, (128,128,128), (255,255,255))
             #print(self.cv_image.shape)
             cv2.imshow('video_window', self.cv_image)
+            self.result.write(self.cv_image)
             #cv2.imshow('binary_window', self.binary_image)
-            cv2.imwrite('./src/NeatoFollowingNeato/dataset/Lens/' + str(self.image_num) + '.jpg', self.cv_image)
+            #cv2.imwrite('./src/NeatoFollowingNeato/dataset/Lens/' + str(self.image_num) + '.jpg', self.cv_image)
             self.image_num += 1
             if hasattr(self, 'image_info_window'):
                 cv2.imshow('image_info', self.image_info_window)
+            if cv2.waitKey(1) & 0xFF == ord('s'):
+                self.result.release()
             cv2.waitKey(5)
 
 if __name__ == '__main__':
