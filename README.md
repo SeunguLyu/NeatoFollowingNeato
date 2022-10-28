@@ -8,7 +8,7 @@ Quite true to its name, this project is about Neatos following Neatos that can c
 ## Approach
 
 ## Design Decisions
-proportional speed (팍팍 멈췄다)  vs. hard-coded speed (
+proportional speed (팍팍 멈췄다)  vs. hard-coded speed (나름 smooth
 
 ## Conclusion
 
@@ -17,6 +17,6 @@ proportional speed (팍팍 멈췄다)  vs. hard-coded speed (
 - neato could not identify the front neato when there was a difference in lighting
 
 ### Improvements
-- 
+- syncing up the speed of the different robots (e.g. using the odometry of each robot)
 
 ### Lessons
