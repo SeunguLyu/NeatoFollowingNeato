@@ -21,10 +21,10 @@ class NeatoTrackerColor(Node):
         self.cv_image = None                        # the latest image from the camera
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
         self.binary_image = None
-        self.isTesting = True
+        self.isTesting = False
         self.lidar = None
 
-        self.boundary_range = 20
+        self.boundary_range = 30
         self.red_lower_bound, self.green_lower_bound, self.blue_lower_bound = 181, 89, 95
         self.red_upper_bound, self.green_upper_bound, self.blue_upper_bound = 255, 141, 178
 
@@ -42,7 +42,7 @@ class NeatoTrackerColor(Node):
         
         self.should_move = 0
         self.drive_msg = Twist()
-        self.linSpeed = 0.1
+        self.linSpeed = 0.2
         thread = Thread(target=self.loop_wrapper)
         thread.start()
 
@@ -59,7 +59,7 @@ class NeatoTrackerColor(Node):
         if moments['m00'] != 0:
             self.center_x, self.center_y = moments['m10']/moments['m00'], moments['m01']/moments['m00']
         self.center_x = self.center_x / self.binary_image.shape[1] - 0.5
-        print('self center x normalized', self.center_x)
+        #print('self center x normalized', self.center_x)
 
     def loop_wrapper(self):
         """ This function takes care of calling the run_loop function repeatedly.
@@ -123,14 +123,19 @@ class NeatoTrackerColor(Node):
             associated with a particular pixel in the camera images """
         self.image_info_window = 255*np.ones((200,500,3))
         if event == cv2.EVENT_LBUTTONDOWN:
+            print("yes")
             self.red_lower_bound = (self.cv_image[y,x,2] - self.boundary_range) if (self.cv_image[y,x,2] - self.boundary_range) > 0 else 0
             self.green_lower_bound = (self.cv_image[y,x,1] - self.boundary_range) if (self.cv_image[y,x,1] - self.boundary_range) > 0 else 0
             self.blue_lower_bound = (self.cv_image[y,x,0] - self.boundary_range) if (self.cv_image[y,x,0] - self.boundary_range) > 0 else 0
+
+            print('Color (b=%d,g=%d,r=%d)' % (self.blue_lower_bound, self.green_lower_bound, self.red_lower_bound))
+            print('Color (b=%d,g=%d,r=%d)' % (self.blue_upper_bound, self.green_upper_bound, self.red_upper_bound))
 
             self.red_upper_bound = (self.cv_image[y,x,2] + self.boundary_range) if (self.cv_image[y,x,2] + self.boundary_range) < 255 else 255
             self.green_upper_bound = (self.cv_image[y,x,1] + self.boundary_range) if (self.cv_image[y,x,1] + self.boundary_range) < 255 else 255
             self.blue_upper_bound = (self.cv_image[y,x,0] + self.boundary_range) if (self.cv_image[y,x,0] + self.boundary_range) < 255 else 255
 
+            print("hi")
             cv2.setTrackbarPos('blue lower bound', 'binary_window', self.blue_lower_bound)
             cv2.setTrackbarPos('red lower bound', 'binary_window', self.red_lower_bound)
             cv2.setTrackbarPos('green lower bound', 'binary_window', self.green_lower_bound)
@@ -138,6 +143,8 @@ class NeatoTrackerColor(Node):
             cv2.setTrackbarPos('blue upper bound', 'binary_window', self.blue_upper_bound)
             cv2.setTrackbarPos('red upper bound', 'binary_window', self.red_upper_bound)
             cv2.setTrackbarPos('green upper bound', 'binary_window', self.green_upper_bound)
+
+            print("bye")
 
         cv2.putText(self.image_info_window,
                     'Color (b=%d,g=%d,r=%d)' % (self.cv_image[y,x,0], self.cv_image[y,x,1], self.cv_image[y,x,2]),
@@ -148,14 +155,19 @@ class NeatoTrackerColor(Node):
 
     def drive(self):
         if self.should_move == 1:
-            angle = int(-self.center_x)
+            angle = int(-self.center_x * 100)
             if self.lidar != None:
+                print(angle)
                 distance = self.lidar.ranges[angle]
+                print(distance)
                 self.drive_msg.angular.z = -self.center_x * 2
                 if (distance < 0.3):
                     self.drive_msg.linear.x = float(self.linSpeed)
                 else:
-                    self.drive_msg.linear.x = (distance-0.3) * 0.5 + self.linSpeed
+                    self.drive_msg.linear.x = (distance-0.3) * 0.2 + self.linSpeed
+                
+                self.drive_msg.linear.x = float(self.linSpeed)
+                
         else:
             self.drive_msg.linear.x = 0.0
             self.drive_msg.angular.z = 0.0
