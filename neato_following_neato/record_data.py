@@ -22,7 +22,7 @@ class BallTracker(Node):
         self.cv_image = None                        # the latest image from the camera
         self.image_num = 0
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
-        self.result = cv2.VideoWriter('try3.avi', cv2.VideoWriter_fourcc(*'MJPG'), 10, (1024, 768))
+        self.result = cv2.VideoWriter('tracking1.avi', cv2.VideoWriter_fourcc(*'MJPG'), 10, (1024, 768))
 
         self.create_subscription(Image, image_topic, self.process_image, 10)
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
