@@ -235,7 +235,8 @@ class NeatoTrackerColor(Node):
 
             if (self.isRecording):
                 self.result1.write(self.cv_image)
-                self.result2.write(self.binary_image)
+                frame = cv2.cvtColor(self.binary_image, cv2.COLOR_GRAY2RGB)
+                self.result2.write(frame)
                 
             cv2.imshow('video_window', self.cv_image)
             cv2.imshow('binary_window', self.binary_image)
