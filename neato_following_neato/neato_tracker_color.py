@@ -25,6 +25,10 @@ class NeatoTrackerColor(Node):
         self.isTesting = True                       # if true, test the code with recorded video
         self.video_name = "tracking1.avi"           # name of the recording used to test the code located in dataset folder
 
+        self.isRecording = True
+        self.recording_name = "recording_centroid.avi"
+        self.recording_name_binary = "recording_binary.avi"
+
         self.cv_image = None                        # the latest image from the camera
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
 
@@ -50,12 +54,6 @@ class NeatoTrackerColor(Node):
         self.red_lower_bound, self.green_lower_bound, self.blue_lower_bound = 0, 0, 0
         self.red_upper_bound, self.green_upper_bound, self.blue_upper_bound = 255, 255, 255
 
-        # get image from Neato
-        if (not self.isTesting):
-            self.create_subscription(Image, image_topic, self.process_image, 10)
-            self.create_subscription(LaserScan, 'scan', self.process_scan, 10)
-            self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
-
         # get image from dataset
         if (self.isTesting):
             video_path = os.path.dirname(os.path.realpath(__file__))
@@ -64,6 +62,20 @@ class NeatoTrackerColor(Node):
             self.cap = cv2.VideoCapture(video_path)
             if (self.cap.isOpened() == False): 
                 print("Unable to read camera feed")
+        # get image from Neato
+        else:
+            self.create_subscription(Image, image_topic, self.process_image, 10)
+            self.create_subscription(LaserScan, 'scan', self.process_scan, 10)
+            self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
+
+        # record video
+        if (self.isRecording):
+            video_path = os.path.dirname(os.path.realpath(__file__))
+            video_path = os.path.abspath(os.path.join(video_path, os.pardir))
+            video_path1 = os.path.join(video_path, 'dataset', self.recording_name)
+            video_path2 = os.path.join(video_path, 'dataset', self.recording_name_binary)
+            self.result1 = cv2.VideoWriter(video_path1, cv2.VideoWriter_fourcc(*'MJPG'), 10, (1024, 768))
+            self.result2 = cv2.VideoWriter(video_path2, cv2.VideoWriter_fourcc(*'MJPG'), 10, (1024, 768))
         
         thread = Thread(target=self.loop_wrapper)
         thread.start()
@@ -220,6 +232,10 @@ class NeatoTrackerColor(Node):
             else:
                 self.previous_rgb = self.current_rgb
                 cv2.circle(self.cv_image, (self.center_x, self.center_y), 10, (128, 255, 0), -1)
+
+            if (self.isRecording):
+                self.result1.write(self.cv_image)
+                self.result2.write(self.binary_image)
                 
             cv2.imshow('video_window', self.cv_image)
             cv2.imshow('binary_window', self.binary_image)
