@@ -53,55 +53,78 @@ If any, mention here.
 ## Demo
 
 [![Demo Video](https://img.youtube.com/vi/cAolaKo4dqg/maxresdefault.jpg)](https://youtu.be/cAolaKo4dqg)
-↑ Click Image For Video
+↑ Click to view video
 
 We decided to achieve the task with real-time color detection through camera and LIDAR scan. Under controlled environment where there is no big difference in lighting, and no extra object that falls into color boundary, the code works well and achieved the goal of following Neato in front of it. Actually, we were able to run the code in multiple Neatos and created something like a Neato-train!
 
 ## Design Decisions
 
 [![Tracking Comparison](https://img.youtube.com/vi/BhG1ZUt1OvM/maxresdefault.jpg)](https://youtu.be/BhG1ZUt1OvM)
-↑ Click Image For Video
+↑ Click to view video
 
 ### Attaching Post-its to Neato
 
+![](images/post-its.png)
 
-
-We found immediately that Neato did not have a distinct color that we can use for the detection. The decoration that covers LIDAR sensor had color that we can detect (such as blue, green, purple) but they were too small and hard to detect in longer distances. Also, we realized that Neato's LIDAR scan cannot figure out where the other Neato is because of the height of each Neato. To solve both of these problems, we attached post-its with different colors - this will provide Neato with a color that is different from the environment, and also raise Neato's height so that it shows up on the LIDAR scan. 
-
-### Centroid Detection Through Binary Image
+We found immediately that Neato did not have a distinct color that we can use for the color detection. The decoration that covers LIDAR sensor had color that we can detect (such as blue, green, purple) but they were too small and hard to detect in longer distances. Also, we realized that Neato's LIDAR scan cannot figure out where the other Neato is because the LIDAR sensor is located above Neato's height. To solve both of these problems, we attached post-its with different colors - this will provide Neato with a color that is different from the environment, and also raise Neato's height so that it shows up on the LIDAR scan. 
 
 ### Automatic Boundary Setting
 
+![](images/auto_boundary_short.gif)
+
 As we mentioned earlier, color value of pixels change dramatically under different environments. So there was need to set up the color boundaries automatically to adjust to new environment, and this was done by clicking a pixel from the camera feed. For example, if we set boundary range to 30 and click a pixel that is (R: 150, G: 120, B: 90) then the boundary will be (R:120-180, G: 90-150, B: 60-120) and will detect every pixel in that range. 
 
-### Testing Mode and Real Mode
+### Centroid Detection Through Binary Image
+
+![](images/centroid_example.png)
+
+Once we set up the boundaries and create a binary image, we can calculate centroid of all the pixels in the boundary. To do this, we used OpenCV's moments function.
+
+```python
+moments = cv2.moments(self.binary_image)
+if moments['m00'] != 0:
+    self.center_x = int(moments['m10']/moments['m00'])
+    self.center_y = int(moments['m01']/moments['m00'])
+```
+Through this process, we were able to get the position of centroid on the current frame. You can see on the left part of the picture that shows centroid as green circle. Once we know the circle, we can calculate the angle between two Neatos, information that we can use to rotate the Neato toward the other Neato's direction. Getting the equation to get exact angle value was done through manual calibration and measurments, since each Neato is set-up differently.
 
 ### Proportional Angular and Linear Velocity
 
-0. Attaching a distinct colored post-its, for better color detection and LIDAR scan.
-1. Automatic boundary setting through clicking color, trackbar
-2. Testing mode / Real mode / Recording mode
-3. Proportional speed through lidar sensor vs hard-coded (angle, linear) - describe the angle process with image.
-4. Centroid detection through binary image
+![](images/proportional_speed.png)
 
-## Conclusion
+```python
+self.drive_msg.angular.z = -self.tendency_x * 2
+if self.isProportional:
+    if self.lidar != None:
+        angle = int(-self.tendency_x * 100)
+        distance = self.lidar.ranges[angle]
+        # ignore occasional 0 value for the distance
+        if distance < 0.5 and not distance == 0.0:
+            self.drive_msg.linear.x = 0.1
+        elif not distance == 0.0:
+            self.drive_msg.linear.x = (distance-0.5) * 0.2 + 0.1
+```
 
-### Challenges
-- lidar camera cannot recognize neato in front of it unless the neato had something high on it
-- neato could not identify the front neato when there was a difference in lighting
+From the angle information, self.tendency_x (angles from -50 to 50 degrees, but divided by 100), we can set the angular speed to be proportional. Neato will rotate faster if there is big angle difference, slower if tendency_x is closer to 0. 
 
-### Limitations
+Proportional linear speed is bit more complicated. We had to use the Neato's LIDAR scan data, and since we know the angle between two robots, we just had to look at the single scan data at the angle. From there we can get the distance between two robots, which can be used to control how fast the Neato should approach another Neato. 
+
+### Testing Mode and Real Mode
+
+One last design choice we made was implementing the test mode. During test mode, we can check our color tracking algorithm using pre-recorded videos, which helped a lot in fast prototyping. The code is written so that transition between real mode and test mode is simple, just setting a boolean value to True or False. Next plan was to improve test mode so that it can also work with bag files, which would give more realistic simulation.
+
+## Challenges
 
 1. Need specific color attachment
 2. Very sensitive to lighting
 3. Weird proportional speed
 
-### Improvements
+## Improvements
 
 1. Real-time adjustment to the tracking pixel
 2. Use HSV instead of RGB
 3. Smarter way to achieve proportional speed
 4. Control multiple neatos from one computer
 
-### Lessons
+## Lessons
 
