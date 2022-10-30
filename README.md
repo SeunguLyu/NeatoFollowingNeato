@@ -22,6 +22,10 @@ Do achieve the goal of Neato following Neato, there were several tasks:
 
 Main concern was the first task. We decided on using computer vision to locate another Neato, and we considered several different algorithms to see what will work well, and also be done in the time frame of this project.
 
+For the second task, this can be done through two different ways. Depending on the algorithm, the computer vision part can figure out the distance between the Neatos. Also, Neato has built-in LIDAR scan that can detect objects around it, so as far as we know the angle between two Neatos we will also be able to get distance between them.
+
+For the last task, it will be best to implement proportional velocity control based on the angle/distance we got from step 1 and 2. 
+
 ## Approach
 
 ### Color Detection
@@ -58,6 +62,7 @@ We decided to achieve the task with real-time color detection through camera and
 
 ## Design Decisions
 
+0. Attaching a distinct colored post-its, for better color detection and LIDAR scan.
 1. Automatic boundary setting through clicking color
 2. Testing mode / Real mode
 3. Proportional speed through lidar sensor vs hard-coded (angle, linear)
