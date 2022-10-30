@@ -115,8 +115,11 @@ One last design choice we made was implementing the test mode. During test mode,
 
 ## Challenges
 
-1. Need specific color attachment
-2. Very sensitive to lighting
+### Modification to Neato Required
+
+It was challenging to make the project work without doing any modification to Neatos. For the particular implementation we did, we needed to attach 4~5 post-its to the Neatos for color detection and LIDAR scan. This raises the complexity as we add more and more Neatos to the algorithm - for example, in the demo video we presented in the beginning, we had to choose two colors that are very different to avoid possible boundary overlap. I guess maximum number of Neatos we can control at the same time would be around 4~5 due to this limitation. Also, setting up takes extra time, which was a big factor that slowed down our testing process. 
+
+### Difference in 
 3. Weird proportional speed
 
 ## Improvements
