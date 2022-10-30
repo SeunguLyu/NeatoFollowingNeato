@@ -30,10 +30,7 @@ For the last task, it will be best to implement proportional velocity control ba
 
 ### Color Detection
 
-[![Tracking Comparison](https://img.youtube.com/vi/BhG1ZUt1OvM/maxresdefault.jpg)](https://youtu.be/BhG1ZUt1OvM)
-↑ Click Image For Video
-
-Color detection was the easiest algorithm to implement, while it was still pretty strong. The basic idea under this method is that you pick all the pixels from the image that falls into specified boundary. For example, if we want to detect "Orange" color, we should give the boundary of (R: 210-250, G: 100-140, B: 0-40) and most of orange-ish color will fall within the boundary. Above video shows how well color detection work real-time.
+Color detection was the easiest algorithm to implement, while it was still pretty strong. The basic idea under this method is that you pick all the pixels from the image that falls into specified boundary. For example, if we want to detect "Orange" color, we should give the boundary of (R: 210-250, G: 100-140, B: 0-40) and most of orange-ish color will fall within the boundary. Despite the simplicity, color detection worked well real-time.
 
 The main issue with this method was limitation on color choices and instability to lighting. Because Neato did not really have a distinc color that can be seperated from the background, Neato should be attached with something that has distinct color such as post-its. Also, the color value of pixel changes dramatically under different lighting. This means that settings for the boundaries should be adjusted every time program runs, and algorithm might not work well when the Neato is passing by strong light or shadow of an object. 
 
@@ -47,7 +44,7 @@ Keypoint matching was another algorithm that we tried, but realized it would not
 2. Keypoint matching had same issue with lighting as the color detection, where it became harder to recognize Neato as the lighting changed from the given image.
 3. As Neato approached another Neato, the angle and size camera see the object changed, causing inconsistency in how descriptors are created.
 
-This was the reason why for keypoint matching, we needed to do something more to achieve the task. One method we considered was create a number plate for the Neatos, which will give a distinct object to detect and enhances the visuals. We ended up not trying this due to the time limitation, but we still saw the possibility implementing keypoint matching for this project.
+Because of these reasons we needed to do something more to achieve the task through keypoint matching. One method we considered was create a number plate for the Neatos, which will give a distinct object to detect and enhances the visuals. We ended up not trying this due to the time limitation, but we still saw the possibility implementing keypoint matching for this project.
 
 ### Algorithm 3? 
 
@@ -58,14 +55,33 @@ If any, mention here.
 [![Demo Video](https://img.youtube.com/vi/cAolaKo4dqg/maxresdefault.jpg)](https://youtu.be/cAolaKo4dqg)
 ↑ Click Image For Video
 
-We decided to achieve the task with real-time color detection through camera and LIDAR scan. Under controlled environment, where there is no big difference in lighting, no extra object that falls into color boundary, the code works well and achieved the goal of following Neato in front of it. Actually, we were able to run the code in multiple Neatos and created something like a Neato-train!
+We decided to achieve the task with real-time color detection through camera and LIDAR scan. Under controlled environment where there is no big difference in lighting, and no extra object that falls into color boundary, the code works well and achieved the goal of following Neato in front of it. Actually, we were able to run the code in multiple Neatos and created something like a Neato-train!
 
 ## Design Decisions
 
+[![Tracking Comparison](https://img.youtube.com/vi/BhG1ZUt1OvM/maxresdefault.jpg)](https://youtu.be/BhG1ZUt1OvM)
+↑ Click Image For Video
+
+### Attaching Post-its to Neato
+
+
+
+We found immediately that Neato did not have a distinct color that we can use for the detection. The decoration that covers LIDAR sensor had color that we can detect (such as blue, green, purple) but they were too small and hard to detect in longer distances. Also, we realized that Neato's LIDAR scan cannot figure out where the other Neato is because of the height of each Neato. To solve both of these problems, we attached post-its with different colors - this will provide Neato with a color that is different from the environment, and also raise Neato's height so that it shows up on the LIDAR scan. 
+
+### Centroid Detection Through Binary Image
+
+### Automatic Boundary Setting
+
+As we mentioned earlier, color value of pixels change dramatically under different environments. So there was need to set up the color boundaries automatically to adjust to new environment, and this was done by clicking a pixel from the camera feed. For example, if we set boundary range to 30 and click a pixel that is (R: 150, G: 120, B: 90) then the boundary will be (R:120-180, G: 90-150, B: 60-120) and will detect every pixel in that range. 
+
+### Testing Mode and Real Mode
+
+### Proportional Angular and Linear Velocity
+
 0. Attaching a distinct colored post-its, for better color detection and LIDAR scan.
-1. Automatic boundary setting through clicking color
-2. Testing mode / Real mode
-3. Proportional speed through lidar sensor vs hard-coded (angle, linear)
+1. Automatic boundary setting through clicking color, trackbar
+2. Testing mode / Real mode / Recording mode
+3. Proportional speed through lidar sensor vs hard-coded (angle, linear) - describe the angle process with image.
 4. Centroid detection through binary image
 
 ## Conclusion

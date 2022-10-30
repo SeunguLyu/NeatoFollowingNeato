@@ -25,7 +25,7 @@ class NeatoTrackerColor(Node):
         self.isTesting = True                       # if true, test the code with recorded video
         self.video_name = "tracking1.avi"           # name of the recording used to test the code located in dataset folder
 
-        self.isRecording = True
+        self.isRecording = False
         self.recording_name = "recording_centroid.avi"
         self.recording_name_binary = "recording_binary.avi"
 
