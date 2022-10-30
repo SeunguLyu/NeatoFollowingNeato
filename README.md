@@ -117,16 +117,21 @@ One last design choice we made was implementing the test mode. During test mode,
 
 ### Modification to Neato Required
 
-It was challenging to make the project work without doing any modification to Neatos. For the particular implementation we did, we needed to attach 4~5 post-its to the Neatos for color detection and LIDAR scan. This raises the complexity as we add more and more Neatos to the algorithm - for example, in the demo video we presented in the beginning, we had to choose two colors that are very different to avoid possible boundary overlap. I guess maximum number of Neatos we can control at the same time would be around 4~5 due to this limitation. Also, setting up takes extra time, which was a big factor that slowed down our testing process. 
+It was challenging to make the project work without doing any modification to Neatos. For the particular implementation we did, we needed to attach 4~5 post-its to the Neatos for color detection and LIDAR scan. This raises the complexity as we add more and more Neatos to the algorithm - for example, in the demo video we presented in the beginning, we had to choose two colors that are very different to avoid possible boundary overlap. We guess maximum number of Neatos we can control at the same time would be around 4~5 due to this limitation. Also, setting up takes extra time, which was a big factor that slowed down our testing process. 
 
-### Difference in 
-3. Weird proportional speed
+### Sensitive to Enviroment
+
+This was the biggest challenge - how well the algorithm worked depended on the time of the day (lighting) and where it was tested (object nearby).  
+
+### Difficulty with Proportional Speed
+
+
 
 ## Improvements
 
 1. Real-time adjustment to the tracking pixel
 2. Use HSV instead of RGB
-3. Smarter way to achieve proportional speed
+3. Smarter way to achieve proportional speed ()
 4. Control multiple neatos from one computer
 
 ## Lessons
