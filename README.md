@@ -3,14 +3,20 @@
 ## Run
 
 - Clone this repo in your ros2 workspace source folder (ex. ros2_ws/src/)
-- After the build, run the following code:
+- After the build, run the following code to test the color detection approach:
 ```
 ros2 run neato_following_neato neato_tracker_color 
+```
+- After the build, run the following code to test the the OpenCV Tracking API approach:
+```
+ros2 run neato_following_neato neato_tracker_api
 ```
 
 ## Overview
 
-Quite true to its name, this project is about Neato following Neato that can create a line of slithering Neatos, with the only limiting factor being the number of available Neatos to connect to (Actually, with more computers, we can have an infinite number of Neato following each other). This project was inspired by an in-class lab, ["Neato Soccer"](https://github.com/comprobo22/class_activities_and_resources/tree/main/neato_soccer)
+Quite true to its name, this project is about Neato following Neato that can create a line of slithering Neatos, with the only limiting factor being the number of available Neatos to connect to (Actually, with more computers, we can have an infinite number of Neato following each other). The Neato placed at the front of the line is controlled manually by the user, and the successive line of Neatos will follow suit. A demonstration of the train of Neatos following each other can be found under the [Demo](#custom_anchor_name) section below.
+
+This project was inspired by an in-class lab, ["Neato Soccer"](https://github.com/comprobo22/class_activities_and_resources/tree/main/neato_soccer), where we would first filter images from the Neato's video feed to isolate the soccer ball, extract the ball's center of mass, then use the information for the Neato to dribble the soccer ball. The color-filtering approach used in the in-class lab is very much alike to our color detection approach. 
 
 ## Goal
 
@@ -46,10 +52,11 @@ Keypoint matching was another algorithm that we tried but realized would not be 
 
 Because of these reasons we needed to do something more to achieve the task through keypoint matching. One method we considered was to create a number plate for the Neatos, which will give a distinct object to detect and enhances the visuals. We ended up not trying this due to the time limitation, but we still saw the possibility of implementing keypoint matching for this project.
 
-### Algorithm 3? 
+### OpenCV Tracking API
 
 If any, mention it here.
 
+<a name="custom_anchor_name"></a>
 ## Demo
 
 [![Demo Video](https://img.youtube.com/vi/cAolaKo4dqg/maxresdefault.jpg)](https://youtu.be/cAolaKo4dqg)
@@ -119,9 +126,11 @@ One last design choice we made was implementing the test mode. During test mode,
 
 It was challenging to make the project work without doing any modifications to Neatos. For the particular implementation we did, we needed to attach 4 to 5 post-its to the Neatos for color detection and LIDAR scan. This raises the complexity as we add more and more Neatos to the algorithm - for example, in the demo video we presented in the beginning, we had to choose two colors that are very different to avoid possible boundary overlap. We guess the maximum number of Neatos we can control at the same time would be around 4 to 5 due to this limitation. Also, setting up takes extra time, which was a big factor that slowed down our testing process. 
 
-### Sensitive to Environment
+Another modification to the Neato that was required involved attaching post-its strictly in the upright direction and not the downward direction. This condition was required due to the elevation at which the camera was mounted on the Neatos--the camera was placed at a high elevation such that it could not detect the post-its that were applied in the downward direction in front of them. 
 
-This was the biggest challenge - how well the algorithm worked depended on the time of the day (lighting) and where it was tested (object nearby). 
+### Sensitivity to the Environment
+
+This was the biggest challenge - how well the algorithm worked depended on the time of the day (lighting) and where it was tested (object nearby). When testing on a cloudy day, the entire MAC was lit evenly in the same shade of lighting. This consistency in the lighting provided an apt environment for the Neato to follow a preceding Neato without being led astray in a totally random direction. On a sunny day, however, the MAC had uneven lighting down the hallway due to shadows created by shelves, desks, chairs, etc. The brightness also emphasized the color of certain objects that fell within the Neato's vision, hindering our color detection. For example, when a preceding Neato had a bright orange post-it on it, the following Neato would at one point move towards the glass-window--it was detecting a bright red lawn chair in the Oval.   
 
 ### Difficulty with Proportional Speed
 
@@ -131,8 +140,9 @@ This was the biggest challenge - how well the algorithm worked depended on the t
 
 1. Real-time adjustment to the tracking pixel
 2. Use HSV instead of RGB
-3. Smarter way to achieve proportional speed ()
+3. Smarter way to achieve proportional speed 
 4. Control multiple neatos from one computer
+5. Syncing up the speed of the different robots (e.g. using the odometry of each robot)
 
 ## Lessons
 
