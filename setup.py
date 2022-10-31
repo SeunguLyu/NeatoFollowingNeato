@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'record_data = neato_following_neato.record_data:main',
-            'neato_tracker_color = neato_following_neato.neato_tracker_color:main'
+            'neato_tracker_color = neato_following_neato.neato_tracker_color:main',
+            'neato_tracker_api = neato_following_neato.neato_tracker_api:main'
         ],
     },
 )
