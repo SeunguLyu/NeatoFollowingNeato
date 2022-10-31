@@ -134,10 +134,11 @@ This was the biggest challenge - how well the algorithm worked depended on the t
 
 ### Difficulty with Proportional Speed
 
-
+When designing the behavior of succeeding robots, we tested between proportional speed (where the speed of the following robots would depend on the distance between the Neato and the leading Neato) and hard-coded speed (where all the following Neatos had the same speed) to decide which approach would display the most seamless movement. Before testing, we expected proportional speed to allow not only a smoother movement but also as a collision-proof mechanism. But to our surprise, proportional speed displayed a rather choppy movement--where it would speed up so quickly for a short while, get to close to the leading Neato, would halt, and repeat the whole process.  
 
 ## Improvements
 
+Considering the challenges mentioned above, here is a list of the improvements/next steps that can be taken: 
 1. Real-time adjustment to the tracking pixel
 2. Use HSV instead of RGB
 3. Smarter way to achieve proportional speed 
@@ -146,3 +147,4 @@ This was the biggest challenge - how well the algorithm worked depended on the t
 
 ## Lessons
 
+One big lesson after working on this project is that we were able to fathom the significance in being aware of the discrepancy between a robot in a real-world environment versus a robot in our virtual environment/code. We've encountered so many real-world challenges and had to pinpoint which challenge was causing an unexpected behavior in the Neato--which mostly involved the Neato turning and charging in random directions. This whole debugging process is what really stays with us.
