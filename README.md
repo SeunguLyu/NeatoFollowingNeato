@@ -54,7 +54,10 @@ Because of these reasons we needed to do something more to achieve the task thro
 
 ### OpenCV Tracking API
 
-If any, mention it here.
+[![Tracking Demo Video](VIDEO PATH HERE)](https://youtu.be/dTCCLRyEKFs)
+↑ Click to view the video
+
+The alternative back-up approach was using OpenCV's tracking API to specify the region of interest (where the Neato would be in the frame) and take the center of that region to follow a leading Neato. To do this, the user is first prompted to draw a rectangle in the frame that would become the region of interest. Once this is done, the API handles identifying the characteristics of the region of interest throughout the test. In our approach, we decided to use ```cv2.TrackerBoosting_create()```. If the user wishes to test out other tracking methods, this can be done so by changing ```self.trackerIdx```.
 
 <a name="custom_anchor_name"></a>
 ## Demo
