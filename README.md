@@ -60,6 +60,7 @@ Because of these reasons we needed to do something more to achieve the task thro
 The alternative back-up approach was using OpenCV's tracking API to specify the region of interest (where the Neato would be in the frame) and take the center of that region to follow a leading Neato. To do this, the user is first prompted to draw a rectangle in the frame that would become the region of interest. Once this is done, the API handles identifying the characteristics of the region of interest throughout the test. In our approach, we decided to use ```cv2.TrackerBoosting_create()```. If the user wishes to test out other tracking methods, this can be done so by changing ```self.trackerIdx```.
 
 <a name="custom_anchor_name"></a>
+
 ## Demo
 
 [![Demo Video](https://img.youtube.com/vi/cAolaKo4dqg/maxresdefault.jpg)](https://youtu.be/cAolaKo4dqg)
@@ -137,14 +138,14 @@ This was the biggest challenge - how well the algorithm worked depended on the t
 
 ### Difficulty with Proportional Speed
 
-When designing the behavior of succeeding robots, we tested between proportional speed (where the speed of the following robots would depend on the distance between the Neato and the leading Neato) and hard-coded speed (where all the following Neatos had the same speed) to decide which approach would display the most seamless movement. Before testing, we expected proportional speed to allow not only a smoother movement but also as a collision-proof mechanism. But to our surprise, proportional speed displayed a rather choppy movement--where it would speed up so quickly for a short while, get to close to the leading Neato, would halt, and repeat the whole process.  
+When designing the behavior of succeeding robots, we tested between proportional speed (where the speed of the following robots would depend on the distance between the Neato and the leading Neato) and hard-coded speed (where all the following Neatos had the same speed) to decide which approach would display the most seamless movement. Before testing, we expected proportional speed to allow not only a smoother movement but also as a collision-proof mechanism. But to our surprise, proportional speed displayed a rather choppy movement--where it would speed up so quickly for a short while, get to close to the leading Neato, would halt, and repeat the whole process. This was due to the fact that LIDAR scan data sometimes returned the value 0 or value with big difference from previous value.
 
 ## Improvements
 
 Considering the challenges mentioned above, here is a list of the improvements/next steps that can be taken: 
-1. Real-time adjustment to the tracking pixel
-2. Use HSV instead of RGB
-3. Smarter way to achieve proportional speed 
+1. Real-time adjustment to the tracking pixel (pick a pixel automatically)
+2. Use HSV instead of RGB and see if it works better
+3. Smarter way to achieve proportional speed
 4. Control multiple neatos from one computer
 5. Syncing up the speed of the different robots (e.g. using the odometry of each robot)
 
