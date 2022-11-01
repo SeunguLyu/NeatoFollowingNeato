@@ -17,16 +17,17 @@ class NeatoTrackerAPI(Node):
         """ Initialize the neato tracker based on tracking API """
         super().__init__('neato_tracker_api')
 
-        # 트랙커 객체 생성자 함수 리스트 ---①
+        # tracking method options
         self.trackers = [cv2.legacy.TrackerBoosting_create,
                          cv2.TrackerMIL_create,
                          cv2.TrackerKCF_create,
                          cv2.legacy.TrackerTLD_create,
                          cv2.legacy.TrackerMedianFlow_create,
-                         cv2.TrackerGOTURN_create, #버그로 오류 발생
+                         cv2.TrackerGOTURN_create, 
                          cv2.TrackerCSRT_create,
                          cv2.legacy.TrackerMOSSE_create]
-        self.trackerIdx = 0  # 트랙커 생성자 함수 선택 인덱스
+                         
+        self.trackerIdx = 0                         # index for selecting self.trackers
         self.tracker = None
         self.isFirst = True
         self.isInit = None
@@ -48,9 +49,6 @@ class NeatoTrackerAPI(Node):
 
         self.boundary_range = 30                    # boundary range for r,g,b lower/upper bound when a pixel is clicked
 
-        # self.current_rgb = (0,0,0)                  # saving current/previous rgb values to avoid cv2.inRange() error
-        # self.previous_rgb = (0,0,0)
-
         self.center_x = 0                           # centroid of the detected object
         self.center_y = 0
         self.tendency_x = 0.0                       # tendency of detected object away from the robot
@@ -58,10 +56,6 @@ class NeatoTrackerAPI(Node):
         self.drive_msg = Twist()                    # message to pulbish to control robot movement
         self.isProportional = False                 # if true, use proportional speed based on LIDAR data
         self.linSpeed = 0.2                         # the base speed of the robot
-
-        # # initialize boundaries
-        # self.red_lower_bound, self.green_lower_bound, self.blue_lower_bound = 0, 0, 0
-        # self.red_upper_bound, self.green_upper_bound, self.blue_upper_bound = 255, 255, 255
 
         # get image from dataset
         if (self.isTesting):
@@ -103,18 +97,12 @@ class NeatoTrackerAPI(Node):
         """ This function takes care of calling the run_loop function repeatedly.
             We are using a separate thread to run the loop_wrapper to work around
             issues with single threaded executors in ROS2 """
-        cv2.namedWindow('video_window')
+        cv2.namedWindow("tracking API")
 
         while True:
             # if testing mode, get image from video feed
             if self.isTesting:
-                ret, frame = self.cap.read()
-                self.cv_image = frame
-                if ret:
-                    self.run_loop()
-                    self.get_centroid()
-                else:
-                    break
+                self.run_loop()
             else:
                 self.run_loop()
                 self.drive()
@@ -153,54 +141,61 @@ class NeatoTrackerAPI(Node):
 
     def run_loop(self): 
         win_name = "tracking API"
-        if not self.cv_image is None:
-            img_draw = self.cv_image.copy()
-            if self.tracker is None: # 트랙커 생성 안된 경우
-                cv2.putText(img_draw, "Press the Space to set ROI!!", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2,cv2.LINE_AA)
-            else:
-                ok, bbox = self.tracker.update(self.cv_image)   # 새로운 프레임에서 추적 위치 찾기 ---③
-                (x,y,w,h) = bbox
-                if ok: # 추적 성공
-                    cv2.rectangle(img_draw, (int(x), int(y)), (int(x + w), int(y + h)), (0,255,0), 2, 1)
-                    cv2.circle(img_draw, (int(x + w/2), int(y + h/2)), radius=0, color=(255, 0, 0), thickness=2)
-                    print("x: {}, y: {}".format((x + w/2), (y + h/2)))
+        while True:
+            if self.isTesting:
+                _, frame = self.cap.read()
+                self.cv_image = frame
 
-                    self.center_x = int(x + w/2)
-                    self.center_y = int(y + h/2)
-                    self.tendency_x = self.center_x / self.cv_image.shape[1] - 0.5
+            if not self.cv_image is None:
+                img_draw = self.cv_image.copy()
+                if self.tracker is None: 
+                    cv2.putText(img_draw, "Press the Space to set ROI!!", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2,cv2.LINE_AA)
 
-                else : # 추적 실패
-                    cv2.putText(img_draw, "Tracking fail.", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2,cv2.LINE_AA)
+                else:
+                    ok, bbox = self.tracker.update(self.cv_image)   # find region of interest in a new frame
+                    (x,y,w,h) = bbox
+                    if ok:  # tracking success
+                        cv2.rectangle(img_draw, (int(x), int(y)), (int(x + w), int(y + h)), (0,255,0), 2, 1)
+                        cv2.circle(img_draw, (int(x + w/2), int(y + h/2)), radius=0, color=(255, 0, 0), thickness=2)
+                        print("x: {}, y: {}".format((x + w/2), (y + h/2)))
 
-            trackerName = self.tracker.__class__.__name__
-            cv2.putText(img_draw, str(trackerIdx) + ":"+trackerName , (100,20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0),2,cv2.LINE_AA)
+                        self.center_x = int(x + w/2)
+                        self.center_y = int(y + h/2)
+                        self.tendency_x = self.center_x / self.cv_image.shape[1] - 0.5
 
-            cv2.imshow(win_name, img_draw)
-            key = cv2.waitKey(10) & 0xff
-            # 스페이스 바 또는 비디오 파일 최초 실행 ---④
-            if key == ord(' ') or (self.isTesting and self.isFirst): 
-                isFirst = False
-                roi = cv2.selectROI(win_name, self.cv_image, False)  # 초기 객체 위치 설정
-                if roi[2] and roi[3]:         # 위치 설정 값 있는 경우
-                    self.tracker = self.trackers[self.trackerIdx]()    #트랙커 객체 생성 ---⑤
-                    self.isInit = self.tracker.init(self.cv_image, roi)
+                    else :  # tracking fail
+                        cv2.putText(img_draw, "Tracking fail.", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2,cv2.LINE_AA)
 
-            elif key in range(48, 56): # 0~7 숫자 입력   ---⑥
-                trackerIdx = key-48     # 선택한 숫자로 트랙커 인덱스 수정
-                if bbox is not None:
-                    self.tracker = self.trackers[self.trackerIdx]() # 선택한 숫자의 트랙커 객체 생성 ---⑦
-                    self.isInit = self.tracker.init(self.cv_image, bbox) # 이전 추적 위치로 추적 위치 초기화
+                trackerName = self.tracker.__class__.__name__
+                cv2.putText(img_draw, str(self.trackerIdx) + ":"+trackerName , (100,20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0),2,cv2.LINE_AA)
 
-            elif key == 27 : 
-                return
+                cv2.imshow(win_name, img_draw)
+                key = cv2.waitKey(10) & 0xff
 
-            if (self.isRecording):
-                self.result1.write(self.cv_image)
-                frame = cv2.cvtColor(self.binary_image, cv2.COLOR_GRAY2RGB)
-                self.result2.write(frame)
-                
-            cv2.imshow('video_window', self.cv_image)
-            cv2.waitKey(5)
+                # space bar pressed or is testing
+                if key == ord(' ') or (self.isTesting and self.isFirst): 
+                    self.isFirst = False
+                    roi = cv2.selectROI(win_name, self.cv_image, False) 
+
+                    if roi[2] and roi[3]:         # case we have region of interest values
+                        self.tracker = self.trackers[self.trackerIdx]()
+                        self.isInit = self.tracker.init(self.cv_image, roi)
+
+                elif key in range(48, 56):        # enter numbers 0-7 
+                    self.trackerIdx = key-48 
+                    if bbox is not None:
+                        self.tracker = self.trackers[self.trackerIdx]()
+                        self.isInit = self.tracker.init(self.cv_image, bbox) 
+
+                elif key == 27 : 
+                    return
+
+                if (self.isRecording):
+                    self.result1.write(self.cv_image)
+                    frame = cv2.cvtColor(self.binary_image, cv2.COLOR_GRAY2RGB)
+                    self.result2.write(frame)
+                    
+                cv2.waitKey(5)
 
 if __name__ == '__main__':
     node = NeatoTrackerAPI("/camera/image_raw")
