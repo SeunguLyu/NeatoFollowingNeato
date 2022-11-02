@@ -1,5 +1,7 @@
 # NeatoFollowingNeato
 
+#### Team: SeungU Lyu, HK Rho
+
 ## Run
 
 - Clone this repo in your ros2 workspace source folder (ex. ros2_ws/src/)
